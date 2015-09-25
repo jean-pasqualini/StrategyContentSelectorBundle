@@ -1,0 +1,16 @@
+{
+    "name": "digitas/strategy-content-selector-bundle",
+    "description": "Systeme de selection de stratégy par strategy",
+    "type": null,
+    "require": {
+        "php": ">=5.4"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jean Pasqualini",
+            "email": "jean.pasqualini.abbeal@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev"
+}
