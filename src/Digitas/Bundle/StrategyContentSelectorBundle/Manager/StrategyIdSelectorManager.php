@@ -8,11 +8,23 @@
 
 namespace Digitas\Bundle\StrategyContentSelectorBundle\Manager;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
+
 class StrategyIdSelectorManager {
+
+    protected $strategys = array();
+
+    /** @var $container ContainerInterface */
+    protected $container;
+
+    public function __construct(ContainerInterface $container)
+    {
+        $this->container = $container;
+    }
 
     public function getIdByStrategy($strategy, $oneresult = false, array $idsAvailable, array $options = array(), array $context = array())
     {
-        $ids = $this->{$this->getMethodByStrategy($strategy)}($idsAvailable, $options, $context);
+        $ids = call_user_func($this->getMethodByStrategy($strategy), $idsAvailable, $options, $context);
 
         if(!is_array($ids))
         {
@@ -24,6 +36,18 @@ class StrategyIdSelectorManager {
         return ($oneresult) ? current($ids) : $ids;
     }
 
+    public function addStrategy($strategy, $callback)
+    {
+        $this->strategys[$strategy] = $callback;
+    }
+
+    public function configureDefaultStrategy()
+    {
+        $this->addStrategy("auto", array($this, "getContentByStrategyAuto"));
+
+        $this->addStrategy("all", array($this, "getContentByStategyAll"));
+    }
+
     /**
      * Retourne la méthode associé à une strategy pour le traitement de cette strategy
      *
@@ -33,20 +57,16 @@ class StrategyIdSelectorManager {
      */
     protected function getMethodByStrategy($strategy)
     {
-        $methodByStragery = array(
-            "auto" => "getContentByStrategyAuto",
-            "all" => "getContentByStategyAll",
-            "parcours_matching" => "getContentByStrategyParcoursMatching",
-            "nature_matching" => "getContentByStrategyNature",
-            "parcours_filter" => "getContentByStrategyParcoursFilter"
-        );
-
-        if(!isset($methodByStragery[$strategy]))
+        if(!isset($this->strategys[$strategy]))
         {
             throw new \Exception("strategy $strategy has no method mapping");
         }
 
-        return $methodByStragery[$strategy];
+        $callback = $this->strategys[$strategy];
+
+        if(is_string($callback[0]) && $this->container->has($callback[0])) $callback[0] = $this->container->get($callback[0]);
+
+        return $callback;
     }
 
     /**

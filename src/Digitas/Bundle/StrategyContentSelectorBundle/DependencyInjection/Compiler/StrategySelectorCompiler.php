@@ -22,8 +22,6 @@ class StrategySelectorCompiler implements CompilerPassInterface {
      */
     public function process(ContainerBuilder $container)
     {
-        exit("a");
-
         if(!$container->hasDefinition("digitas_strategy_content_selector_bundle.id_strategy_selector_manager"))
         {
             return;
@@ -35,9 +33,12 @@ class StrategySelectorCompiler implements CompilerPassInterface {
         {
             $class = $container->getDefinition($id)->getClass();
 
-            $strategyMethods = call_user_func_array($class, array("getStategyMethods"));
+            $strategyMethods = call_user_func_array(array($class, "getStrategyMethods"), array());
 
-            exit(print_r($strategyMethods, true));
+            foreach($strategyMethods as $strategy => $method)
+            {
+                $definition->addMethodCall("addStrategy", array($strategy, array($id, $method)));
+            }
         }
     }
 }

@@ -5,12 +5,13 @@
  * Date: 24/11/2015
  * Time: 11:48
  */
+namespace Digitas\Bundle\StrategyContentSelectorBundle\StrategySelector;
 
 use Digitas\Bundle\LaPosteCalculateurTarifsBundle\Model\ContextStep;
 
 class CalculateurTarifsStrategySelector {
 
-    protected function getStrategyMethods()
+    public static function getStrategyMethods()
     {
         return array(
             "parcours_matching" => "getContentByStrategyParcoursMatching",

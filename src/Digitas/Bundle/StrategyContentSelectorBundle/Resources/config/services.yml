@@ -4,7 +4,7 @@ parameters:
 services:
     digitas_strategy_content_selector_bundle.id_strategy_selector_manager:
        class: %digitas_strategy_content_selector_bundle.id_strategy_selector_manager.class%
-       arguments: []
+       arguments: [@service_container]
 
     digitas_strategy_content_selector_bundle.strategy_selector.calculateur_tarifs:
        class: Digitas\Bundle\StrategyContentSelectorBundle\StrategySelector\CalculateurTarifsStrategySelector
