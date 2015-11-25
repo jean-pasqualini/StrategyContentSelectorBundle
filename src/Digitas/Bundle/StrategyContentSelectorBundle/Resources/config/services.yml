@@ -2,7 +2,7 @@ parameters:
      digitas_strategy_content_selector_bundle.id_strategy_selector_manager.class: Digitas\Bundle\StrategyContentSelectorBundle\Manager\StrategyIdSelectorManager
 
 services:
-     digitas_form_course.strategy_selector.symfony_validation:
+    digitas_form_course.strategy_selector.symfony_validation:
          class: Digitas\Bundle\StrategyContentSelectorBundle\StrategySelector\SymfonyValidationStrategySelector
          arguments: [@validator]
          tags:
