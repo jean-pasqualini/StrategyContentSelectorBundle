@@ -71,7 +71,7 @@ class SymfonyValidationStrategySelector {
         return new $className($options);
     }
 
-    protected function newContraintContainerByArray($array)
+    protected function newContraintContainerByArray($array, $optionsStrategy)
     {
         $collectionConstraint = array();
 
@@ -79,7 +79,7 @@ class SymfonyValidationStrategySelector {
         {
             if(is_array($value))
             {
-                $constraints = array($this->newContraintContainerByArray($value));
+                $constraints = array($this->newContraintContainerByArray($value, $optionsStrategy));
             }
             else
             {
@@ -95,7 +95,11 @@ class SymfonyValidationStrategySelector {
             $collectionConstraint[$key] = $constraints;
         }
 
-        return new Assert\Collection($collectionConstraint);
+        return new Assert\Collection(array(
+            "fields" => $collectionConstraint,
+            "allowExtraFields" => $optionsStrategy["allowExtraFields"],
+            "allowMissingFields" => $optionsStrategy["allowMissingFields"],
+        ));
     }
 
     /**
@@ -105,14 +109,14 @@ class SymfonyValidationStrategySelector {
      *
      * @return array An array of values or Constraint instances
      */
-    protected function parseNodes(array $nodes)
+    protected function parseNodes(array $nodes, $optionsStrategy)
     {
-        return $this->newContraintContainerByArray($nodes);
+        return $this->newContraintContainerByArray($nodes, $optionsStrategy);
     }
 
-    protected function isValid($constraints, $value)
+    protected function isValid($constraints, $value, $optionsStrategy)
     {
-        $constraints = $this->parseNodes($constraints);
+        $constraints = $this->parseNodes($constraints, $optionsStrategy);
 
         return $this->validator->validateValue($value, $constraints)->count() < 1;
     }
@@ -134,18 +138,30 @@ class SymfonyValidationStrategySelector {
 
     public function getBySymfonyValidation(array $idsAvailables, array $options, array $context)
     {
+        $options = array_merge(array(
+            "unique_result" => false,
+            "allowExtraFields" => true,
+            "allowMissingFields" => false
+        ), $options);
+
+        $idsValides = array();
+
         foreach($options["aiguilleurs"] as $aiguilleur)
         {
             $aiguilleur["constraints"] = $this->applyConstraintCollection($aiguilleur["constraints"]);
 
             $aiguilleur["constraints"] = $this->applyPathArrayToStrandardArray($aiguilleur["constraints"]);
 
-            if($this->isValid($aiguilleur["constraints"], $context["data"]))
+            if($this->isValid($aiguilleur["constraints"], $context["data"], $options))
             {
-                return $aiguilleur["value"];
+                $idValide = $aiguilleur["value"];
+
+                $idsValides[] = $idValide;
+
+                if(!empty($options["unique_result"])) return $idValide;
             }
         }
 
-        return null;
+        return (!empty($idsValides)) ? $idsValides : null;
     }
 }
