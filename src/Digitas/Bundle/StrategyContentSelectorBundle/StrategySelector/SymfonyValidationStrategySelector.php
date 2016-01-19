@@ -126,6 +126,7 @@ class SymfonyValidationStrategySelector {
 
     protected function isValid($constraints, $value, $optionsStrategy)
     {
+
         if(is_array($constraints))
         {
             $constraints = $this->parseNodes($constraints, $optionsStrategy);
@@ -138,6 +139,8 @@ class SymfonyValidationStrategySelector {
         {
             throw new \Exception("invalid type constraints");
         }
+
+        $constraints = $this->parseNodes($constraints, $optionsStrategy);
 
         return $this->validator->validateValue($value, $constraints)->count() < 1;
     }
