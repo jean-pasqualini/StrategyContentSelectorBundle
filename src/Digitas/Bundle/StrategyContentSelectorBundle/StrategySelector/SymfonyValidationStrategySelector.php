@@ -55,6 +55,11 @@ class SymfonyValidationStrategySelector {
      */
     protected function newConstraint($name, $options = null)
     {
+        if(strpos($name, '-') !== false)
+        {
+            $name = substr($name, strpos($name, '-') + 1);
+        }
+
         if (strpos($name, '\\') !== false && class_exists($name)) {
             $className = (string) $name;
         } elseif (strpos($name, ':') !== false) {
@@ -81,13 +86,7 @@ class SymfonyValidationStrategySelector {
             }
             else
             {
-                $constraintsDefinition = $value->getArrayCopy();
-                $constraints = array();
-
-                foreach($constraintsDefinition as $class => $options)
-                {
-                    $constraints[] = $this->newConstraint($class, $options);
-                }
+                $constraints = $this->newContraintCollectionByArrayObject($value);
             }
 
             $collectionConstraint[$key] = $constraints;
@@ -98,6 +97,19 @@ class SymfonyValidationStrategySelector {
             "allowExtraFields" => $optionsStrategy["allowExtraFields"],
             "allowMissingFields" => $optionsStrategy["allowMissingFields"],
         ));
+    }
+
+    protected function newContraintCollectionByArrayObject(\ArrayObject $arrayObject)
+    {
+        $constraintsDefinition = $arrayObject->getArrayCopy();
+        $constraints = array();
+
+        foreach($constraintsDefinition as $class => $options)
+        {
+            $constraints[] = $this->newConstraint($class, $options);
+        }
+
+        return $constraints;
     }
 
     /**
@@ -114,7 +126,18 @@ class SymfonyValidationStrategySelector {
 
     protected function isValid($constraints, $value, $optionsStrategy)
     {
-        $constraints = $this->parseNodes($constraints, $optionsStrategy);
+        if(is_array($constraints))
+        {
+            $constraints = $this->parseNodes($constraints, $optionsStrategy);
+        }
+        elseif($constraints instanceof \ArrayObject)
+        {
+            $constraints = $this->newContraintCollectionByArrayObject($constraints);
+        }
+        else
+        {
+            throw new \Exception("invalid type constraints");
+        }
 
         return $this->validator->validateValue($value, $constraints)->count() < 1;
     }

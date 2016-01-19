@@ -25,7 +25,14 @@ class ArrayPathNormalizer {
 
         foreach($pathArray as $path => $value)
         {
-            $standartArray = array_merge_recursive($standartArray, self::createArray($path, $value));
+            if($path === 'root')
+            {
+                $standartArray = $value;
+            }
+            else
+            {
+                $standartArray = array_merge_recursive($standartArray, self::createArray($path, $value));
+            }
         }
 
         return $standartArray;
